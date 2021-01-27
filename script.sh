@@ -15,6 +15,7 @@ enterToContinue() {
 	clear
 }
 
+export WHERE_AM_I_RUNED=$(pwd)
 export LPE_PATH="/mnt/cle_lpe"
 DEVICE="/dev/sdc"
 PART_EFI="${DEVICE}2"
@@ -77,9 +78,10 @@ fi
 cp /boot/vmlinuz-$LINUX_VERSION ./boot/vmlinuz
 cp /boot/initrd.img-$LINUX_VERSION ./boot/initrd.img
 echo "Copie du noyaux et de initrd finie"
+enterToContinue
 
 # Installation grub
-echo -en "\nInstallation de grub ? [Y/n] (Non par defaut)"
+echo -en "\nInstallation de grub ? [Y/n] (Non par defaut) : "
 read REP
 if [ "$REP" = "Y" -o "$REP" = "y" ]
 	then
@@ -132,7 +134,7 @@ fi
 echo "Installation de grub terminée"
 enterToContinue
 
-echo -en "\nConfigurer grub ? [Y/n]"
+echo -en "\nConfigurer grub ? [Y/n] (Non par défaut) :"
 read REP
 if [ $REP = "Y" -o $REP = "y" ]
 	then
@@ -158,13 +160,21 @@ fi
 echo "Configuration de grub terminée"
 enterToContinue
 
-echo -en "\nInstaller Busybox ? [Y/n]"
+echo -en "\nInstaller Busybox ? [Y/n] (Non par défaut ) : "
 read REP
 if [ "$REP" = "Y" -o "$REP" = "y" ]
 	then
-		cd /home/coranthin/Cours/LA1/LPE/src/
-		tar -jxvf busybox.tar.bz2 --directory=../build
-		cd ../build
+		cd $WHERE_AM_I_RUNED/src/
+    if [ ! -d ../build ]
+      then
+        mkdir ../build
+      else
+        rm -rf ../build/*
+    fi
+		tar -jxvf busybox.tar.bz2 --directory=../build --one-top-level=busybox --strip-components=1
+		cd ../build/busybox
+    echo "Extraction de busybox finie"
+    enterToContinue
 		make menuconfig
 		make -j9
 		make CONFIG_PREFIX=$LPE_PATH install
@@ -174,19 +184,21 @@ if [ "$REP" = "Y" -o "$REP" = "y" ]
       then
         mkdir dev
     fi
-		if [ -z $(apt-cache search makedev) ]
+		if [ -z "$(apt-cache search makedev)" ]
 			then
 				apt-get install makedev
 		fi
 		cd dev
     /sbin/MAKEDEV generic console
+    echo "MAKEDEV terminé"
+    enterToContinue
     cd $LPE_PATH
     if [ ! -d etc/init.d ]
       then
         mkdir -p etc/init.d
     fi
-    cd etc/init.d
     $LPE_PATH/bin/dumpkmap > etc/french.kmap
+    cd etc/init.d
     echo "#! /bin/sh
     # Monte systeme fichier virtuel qui gere les processus
     mount -t proc /proc
@@ -197,7 +209,10 @@ if [ "$REP" = "Y" -o "$REP" = "y" ]
     " > rcS
     chmod +x rcS
     cd $LPE
-    mkdir proc
+    if [ ! -d proc ]
+      then
+        mkdir proc
+    fi
     mkdir -p ./sys ./root/run ./root/proc ./root/sys
 
 fi
