@@ -139,22 +139,7 @@ read REP
 if [ $REP = "Y" -o $REP = "y" ]
 	then
 		cd ./boot/grub
-		echo "menuentry 'LPE noyau Ubuntu(sda1)' {
-			set root='hd0,msdos1'
-			linux /boot/vmlinuz root=/dev/sda1 rootdelay=5
-			initrd /boot/initrd.img
-		}
-		menuentry 'LPE noyau Ubuntu(sdb1)' {
-			set root='hd0,msdos1'
-			linux /boot/vmlinuz root=/dev/sdb1 rootdelay=5
-			initrd /boot/initrd.img
-		}
-
-		menuentry 'LPE noyau Ubuntu(sdc1)' {
-			set root='hd0,msdos1'
-			linux /boot/vmlinuz root=/dev/sdc1 rootdelay=5
-			initrd /boot/initrd.img
-		}" > grub.cfg
+		cat $WHERE_AM_I_RUNED/data/grub.cfg > grub.cfg
 fi
 
 echo "Configuration de grub terminée"
@@ -175,11 +160,19 @@ if [ "$REP" = "Y" -o "$REP" = "y" ]
 		cd ../build/busybox
     echo "Extraction de busybox finie"
     enterToContinue
-		make menuconfig
+    # Pour compilation statique
+    #make menuconfig
+    # Pour compilation dynamique
+    make defconfig
 		make -j9
 		make CONFIG_PREFIX=$LPE_PATH install
 		cd $LPE_PATH
-		# si existe pas créer dev
+    # Pour compilation dynamique
+    if [ ! -d lib ]
+      then
+        mkdir lib
+    fi
+    mklibs -v -d lib bin/*
     if [ ! -d dev ]
       then
         mkdir dev
@@ -199,22 +192,29 @@ if [ "$REP" = "Y" -o "$REP" = "y" ]
     fi
     $LPE_PATH/bin/dumpkmap > etc/french.kmap
     cd etc/init.d
-    echo "#! /bin/sh
-    # Monte systeme fichier virtuel qui gere les processus
-    mount -t proc /proc
-    # Monte en lecture ecriture le système de fichier racine
-    mount -o remount,rw /
-    # Load la key map en fr
-    loadkmap < /etc/french.kmap
-    " > rcS
+    cat $WHERE_AM_I_RUNED/data/rcS > rcS
     chmod +x rcS
     cd $LPE
     if [ ! -d proc ]
       then
         mkdir proc
     fi
-    mkdir -p ./sys ./root/run ./root/proc ./root/sys
-
+    if [ ! -d sys ]
+      then
+        mkdir sys
+    fi
+    if [ ! -d root/run ]
+      then
+        mkdir -p root/run
+    fi
+    if [ ! -d root/proc ]
+      then
+        mkdir -p root/proc
+    fi
+    if [ ! -d root/sys ]
+      then
+        mkdir -p root/sys
+    fi
 fi
 
 echo "Installation de busybox terminée"
