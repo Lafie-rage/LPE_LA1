@@ -15,11 +15,11 @@ enterToContinue() {
 	clear
 }
 
-export WHERE_AM_I_RUNED=$(pwd)
+WHERE_AM_I_RUNED=$(pwd)
 export LPE_PATH="/mnt/cle_lpe"
 DEVICE="/dev/sdc"
 PART_EFI="${DEVICE}2"
-
+DATA_PATH=${WHERE_AM_I_RUNED}/data
 dmesg | grep sd | tail
 
 echo -en "\nSélectionner device : [$DEVICE] ? > "
@@ -139,7 +139,7 @@ read REP
 if [ $REP = "Y" -o $REP = "y" ]
 	then
 		cd ./boot/grub
-		cat $WHERE_AM_I_RUNED/data/grub.cfg > grub.cfg
+		cat $DATA_PATH/grub.cfg > grub.cfg
 fi
 
 echo "Configuration de grub terminée"
@@ -160,13 +160,10 @@ if [ "$REP" = "Y" -o "$REP" = "y" ]
 		cd ../build/busybox
     echo "Extraction de busybox finie"
     enterToContinue
-    # Pour compilation statique
-    #make menuconfig
-    # Pour compilation dynamique
-    make defconfig
-		make -j9
-		make CONFIG_PREFIX=$LPE_PATH install
-		cd $LPE_PATH
+    cat $DATA_PATH/busybox_config > .config
+    make -j9
+  	make CONFIG_PREFIX=$LPE_PATH install
+  	cd $LPE_PATH
     # Pour compilation dynamique
     if [ ! -d lib ]
       then
@@ -192,10 +189,14 @@ if [ "$REP" = "Y" -o "$REP" = "y" ]
     fi
     $LPE_PATH/bin/dumpkmap > etc/french.kmap
     cd etc/init.d
-    cat $WHERE_AM_I_RUNED/data/rcS > rcS
+    cat $DATA_PATH/rcS > rcS
     chmod +x rcS
-    cd $LPE
-    if [ ! -d proc ]
+    cd $LPE_PATH
+  	if [ ! -d run ]
+  		then
+  			mkdir -p run
+  	fi
+  	if [ ! -d proc ]
       then
         mkdir proc
     fi
@@ -215,50 +216,11 @@ if [ "$REP" = "Y" -o "$REP" = "y" ]
       then
         mkdir -p root/sys
     fi
+    cd etc
+    cat $DATA_PATH/inittab > inittab
+    cat $DATA_PATH/"passwd" > "passwd"
+    cat $DATA_PATH/group > group
 fi
 
 echo "Installation de busybox terminée"
 enterToContinue
-
-# Installation et configuration busybox
-# make menuconfig
-# make -j9
-# cd $LPE_PATH
-# mkdir dev
-# Installation de makedev s'il ne l'était pas
-# apt-get install makedev
-# cd dev/
-# /sbin/MAKEDEV generic console
-# mkdir -p etc/init.d
-#cd $LPE_PATH/etc/init.d
-#./bin/dumpkmap > etc/french.kmap
-#echo "#! /bin/sh
-# Monte systeme fichier virtuel qui gere les processus
-#mount -t proc /proc
-# Monte en lecture ecriture le système de fichier racine
-#mount -o remount,rw /
-#loadkmap < /etc/french.kmap
-#" > rcS
-#chmod +x rcS
-#cd $LPE
-#mkdir proc
-#mkdir -p ./sys ./root/run ./root/proc ./root/sys
-
-# Check si ça marche
-##
-## Start an "askfirst" shell on the console (whatever that may be)
-#::askfirst:-/bin/sh
-## Start an "askfirst" shell on /dev/tty2-4
-#tty2::askfirst:-/bin/sh
-#tty3::askfirst:-/bin/sh
-#tty4::askfirst:-/bin/sh
-## /sbin/getty invocations for selected ttys
-#tty4::respawn:/sbin/getty 38400 tty5
-#tty5::respawn:/sbin/getty 38400 tty6
-# A mettre dans etc/initab
-
-#root::0:0:Super User:/:/bin/sh
-# A mettre dans etc/passwd
-
-#root:x:0:
-# A mettre dans etc/group

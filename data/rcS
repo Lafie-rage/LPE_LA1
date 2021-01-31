@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 # Monte systeme fichier virtuel qui gere les processus
 mount -t proc /proc
 # Monte en lecture ecriture le système de fichier racine
