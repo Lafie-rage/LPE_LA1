@@ -15,11 +15,11 @@ enterToContinue() {
 	clear
 }
 
-WHERE_AM_I_RUNED=$(pwd)
+WHERE_AM_I_RAN=$(pwd)
 export LPE_PATH="/mnt/cle_lpe"
 DEVICE="/dev/sdc"
 PART_EFI="${DEVICE}2"
-DATA_PATH=${WHERE_AM_I_RUNED}/data
+DATA_PATH=${WHERE_AM_I_RAN}/data
 dmesg | grep sd | tail
 
 echo -en "\nSélectionner device : [$DEVICE] ? > "
@@ -65,19 +65,57 @@ mount $PART $LPE_PATH
 echo "Clé montée"
 enterToContinue
 
-LINUX_VERSION=$(uname -r)
-echo "Votre version de linux est $LINUX_VERSION"
-
-echo "Copie du noyaux et de initrd"
 cd $LPE_PATH
 if [ ! -d boot/ ]
 	then
 	 	echo "Dossier $LPE_PATH créer pour monter la clef"
 		mkdir boot/
 fi
-cp /boot/vmlinuz-$LINUX_VERSION ./boot/vmlinuz
-cp /boot/initrd.img-$LINUX_VERSION ./boot/initrd.img
-echo "Copie du noyaux et de initrd finie"
+
+# Clear build folder
+if [ ! -d ../build ]
+  then
+    mkdir ../build
+  else
+    rm -rf ../build/*
+fi
+
+echo -e "\nQuel noyau utiliser :"
+echo "1 - Votre noyau et initrd"
+echo "2 - Le noyau se trouvant dans $WHERE_AM_I_RAN/src"
+read REP
+while :
+  do
+    case $REP in
+      1)
+        LINUX_VERSION=$(uname -r)
+        echo "Votre version de linux est $LINUX_VERSION"
+
+        echo "Copie du noyaux et de initrd"
+
+        cp /boot/vmlinuz-$LINUX_VERSION ./boot/vmlinuz
+        cp /boot/initrd.img-$LINUX_VERSION ./boot/initrd.img
+        echo "Copie du noyaux et de initrd finie"
+        break
+        ;;
+      2)
+        cd $WHERE_AM_I_RAN/src
+        tar -Jxvf linux_kernel.tar.xz --directory=../build --one-top-level=linux_kernel --strip-components=1
+        cat $DATA_PATH/kernel_config > $WHERE_AM_I_RAN/build/linux_kernel/.config
+        make menuconfig
+        make -j9
+        cp $WHERE_AM_I_RAN/build/arch/x86/boot/bzImage $LPE_PATH/boot/bzImage
+        echo "Noyau linux installé avec succés"
+        enterToContinue
+        exit 0
+        break
+        ;;
+      *)
+        echo -ne "Choix invalide...\nRessayez : "
+        read REP
+        ;;
+    esac
+done
 enterToContinue
 
 # Installation grub
@@ -149,13 +187,7 @@ echo -en "\nInstaller Busybox ? [Y/n] (Non par défaut ) : "
 read REP
 if [ "$REP" = "Y" -o "$REP" = "y" ]
 	then
-		cd $WHERE_AM_I_RUNED/src/
-    if [ ! -d ../build ]
-      then
-        mkdir ../build
-      else
-        rm -rf ../build/*
-    fi
+		cd $WHERE_AM_I_RAN/src/
 		tar -jxvf busybox.tar.bz2 --directory=../build --one-top-level=busybox --strip-components=1
 		cd ../build/busybox
     echo "Extraction de busybox finie"
