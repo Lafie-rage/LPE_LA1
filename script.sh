@@ -16,7 +16,6 @@ enterToContinue() {
 WHERE_AM_I_RAN=$(pwd)
 export LPE_PATH="/mnt/cle_lpe"
 DEVICE="/dev/sdc"
-PART_EFI="${DEVICE}2"
 DATA_PATH=${WHERE_AM_I_RAN}/data
 dmesg | grep sd | tail
 
@@ -28,6 +27,7 @@ then
 fi
 
 PART="${DEVICE}1"
+PART_EFI="${DEVICE}2"
 
 echo "Utilisation de la partition : $PART"
 enterToContinue
