@@ -101,13 +101,13 @@ while :
       2)
         cd $WHERE_AM_I_RAN/src
         tar -Jxvf linux_kernel.tar.xz --directory=../build --one-top-level=linux_kernel --strip-components=1
-        cat $DATA_PATH/kernel_config > $WHERE_AM_I_RAN/build/linux_kernel/.config
-        make menuconfig
+        cd $WHERE_AM_I_RAN/build/linux_kernel
+        cat $DATA_PATH/kernel_config > .config
+        # Installation des paquets si nécessaire...
+        apt-get install libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf
         make -j9
-        cp $WHERE_AM_I_RAN/build/arch/x86/boot/bzImage $LPE_PATH/boot/bzImage
+        cp arch/x86/boot/bzImage $LPE_PATH/boot/bzImage
         echo "Noyau linux installé avec succés"
-        enterToContinue
-        exit 0
         break
         ;;
       *)
@@ -119,7 +119,7 @@ done
 enterToContinue
 
 # Installation grub
-echo -en "\nInstallation de grub ? [Y/n] (Non par defaut) : "
+echo -n "Installation de grub ? [Y/n] (Non par defaut) : "
 read REP
 if [ "$REP" = "Y" -o "$REP" = "y" ]
 	then
@@ -172,10 +172,11 @@ fi
 echo "Installation de grub terminée"
 enterToContinue
 
-echo -en "\nConfigurer grub ? [Y/n] (Non par défaut) :"
+echo -n "Configurer grub ? [Y/n] (Non par défaut) :"
 read REP
 if [ $REP = "Y" -o $REP = "y" ]
 	then
+    cd $LPE_PATH
 		cd ./boot/grub
 		cat $DATA_PATH/grub.cfg > grub.cfg
 fi
