@@ -18,7 +18,7 @@ export BOOT_PATH="/mnt/boot_rpi"
 export ROOT_PATh="/mnt/root_rpi"
 DEVICE="/dev/sdc"
 DATA_PATH=${WHERE_AM_I_RAN}/data
-dmesg | grep -E (sd|mmc) | tail
+dmesg | grep -E "(sd|mmc|hd)" | tail
 
 echo -en "\nSélectionner device : [$DEVICE] ? > "
 read REP
@@ -69,3 +69,9 @@ mount $PART_BOOT $BOOT_PATH
 mount $PART_ROOT $ROOT_PATH
 
 cp -r $DATA_PATH/boot_rpi/* $BOOT_PATH
+
+echo "Voulez-vous forcer le désarchivage de busybox ? [Y/n] (Non par défaut)"
+read $REP
+if [ "$REP" = "Y" -o "$REP" = "y" ]
+  then
+    tar -jxvf busybox.tar.bz2 --directory=../build --one-top-level=busybox --strip-components=1
