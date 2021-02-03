@@ -30,10 +30,10 @@ After that rename them as, respectively, linux_kernel.tar.xz and busybox.tar.bz2
 If you want to change the format of archive you'll have to change the untar command in the script which are :
 
 ```sh
-# For the Linux kernel at line 101
+# For the Linux kernel at line 101 of script.sh
 tar -Jxvf linux_kernel.tar.xz --directory=../build --one-top-level=linux_kernel --strip-components=1
 
-# For Busybox at line 197
+# For Busybox at line 197 of script.sh
 tar -jxvf busybox.tar.bz2 --directory=../build --one-top-level=busybox --strip-components=1
 ```
 
