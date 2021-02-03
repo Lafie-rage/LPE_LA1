@@ -102,7 +102,14 @@ while :
         cd $WHERE_AM_I_RAN/build/linux_kernel
         cat $DATA_PATH/kernel_config > .config
         # Installation des paquets si nécessaire...
-        apt-get install libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf
+        echo "Voulez-vous installer les librairies utiles à la compilation du noyau ? ATTENTION: Si vous ne les avez pas, la compilation ne se fera pas. [Y/n] (non par défaut)"
+        read REP
+        if [ "$REP" = "Y" -o "$REP" = "y" ]
+          then
+            apt-get install libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf
+        fi
+        clear
+        echo "Compilation du noyau"
         make -j9
         cp arch/x86/boot/bzImage $LPE_PATH/boot/bzImage
         echo "Noyau linux installé avec succés"
