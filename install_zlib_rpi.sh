@@ -8,7 +8,7 @@ if [ $(id -u) -ne 0 ]
     exit 1
 fi
 
-enterToContinue() {
+install() {
   ./configure --prefix=$TARGET --zprefix
   make -j9
   make install

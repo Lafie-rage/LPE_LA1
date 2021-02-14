@@ -8,17 +8,11 @@ if [ $(id -u) -ne 0 ]
     exit 1
 fi
 
-install() {
-  ./configure --prefix=$TARGET --with-shared --host=x86_64-build_unknown-linux-gnu --target=arm-linux-gnueabihf --disable-stripping
-  make -j9
-  make install
-}
-
 export WHERE_AM_I_RAN=$(pwd)
 export ROOT_PATH="/mnt/root_rpi"
 
 
-export SRC_NC=$WHERE_AM_I_RAN/build/ncurses-6.2
+export SRC=$WHERE_AM_I_RAN/build/ncurses-6.2
 export CROSS_COMPILER=${WHERE_AM_I_RAN}/build/rpi_gcc/bin/arm-linux-gnueabihf-
 export TARGET=${WHERE_AM_I_RAN}/build/compiled_ncurses_pi/
 export NC_PC=${WHERE_AM_I_RAN}/build/compiled_ncurses/
@@ -28,6 +22,12 @@ export CXX=${CROSS_COMPILER}g++
 export TIC=${NC_PC}/bin/tic
 export LD_LIBRARY_PATH=${NC_PC}/lib
 export BUILD_CC=gcc
+
+install() {
+  ./configure --prefix=$TARGET --with-shared --host=x86_64-build_unknown-linux-gnu --target=arm-linux-gnueabihf --disable-stripping
+  make -j9
+  make install
+}
 
 cd $SRC
 
