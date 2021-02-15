@@ -1,7 +1,15 @@
 #!/bin/sh
 # Monte systeme fichier virtuel qui gere les processus
-mount -t proc proc /proc
+mount proc /proc -t proc
 # Monte en lecture ecriture le système de fichier racine
-mount -o remount,rw /
+mount / -o remount,rw
+
+
 # Load la key map en fr
 loadkmap < /etc/french.kmap
+
+
+# Network config
+/etc/init.d/rc.network &
+
+login

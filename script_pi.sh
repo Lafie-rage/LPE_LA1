@@ -97,16 +97,32 @@ if [ ! -d dev ]
   then
     mkdir dev
 fi
-cd $ROOT_PATH
+if [ ! -d dev/pts ]
+  then
+    mkdir dev/pts
+fi
 if [ ! -d etc/init.d ]
   then
     mkdir -p etc/init.d
 fi
 cat $DATA_PATH/french.kmap > etc/french.kmap
 cd etc/init.d
-cat $DATA_PATH/rcS > rcS
-chmod +x rcS
+cat $DATA_PATH/rcS_rpi > rcS
+cat $DATA_PATH/rc.network > rc.network
+cat $DATA_PATH/rc.services > rc.services
+chmod +x ./*
+cd ../
+mkdir ifplugd
+cat $DATA_PATH/ifplugd.action > ifplugd/ifplugd.action
+chmod +x ifplugd/ifplugd.action
+mkdir udhcpc
+cat $DATA_PATH/udhcpc.action > udhcpc/udhcpc.action
+chmod +x udhcpc/udhcpc.action
+cat $DATA_PATH/hostname > hostname
+cat $DATA_PATH/profile > profile
 cd $ROOT_PATH
+mkdir -p home/httpd
+cat $DATA_PATH/index.html > home/httpd/index.html
 if [ ! -d run ]
   then
     mkdir -p run
@@ -132,9 +148,49 @@ if [ ! -d root/sys ]
     mkdir -p root/sys
 fi
 cd etc
-cat $DATA_PATH/inittab > inittab
+cat $DATA_PATH/inittab_rpi > inittab
 cat $DATA_PATH/"passwd" > "passwd"
 cat $DATA_PATH/group > group
 
 echo "Installation de busybox terminée"
 enterToContinue
+
+echo -n "Voulez-vous installer dropbear pour configurer SSH ? [Y/n] (Non par défaut)"
+read REP
+if [ ! "$REP" = "Y" -a ! "$REP" = "y" ]
+  then
+    exit 0
+fi
+cd $WHERE_AM_I_RAN/src
+tar -jxvf dropbear.tar.bz2 --directory=../build --one-top-level=dropbear --strip-components=1
+cd $WHERE_AM_I_RAN/build/dropbear
+CC=${CROSS_COMPILER}gcc
+CXX=${CROSS_COMPILER}g++
+SRC_DEST=$WHERE_AM_I_RAN/build/compiled_dropbear_rpi
+
+install_dropbear() {
+  ./configure --host=arm-linux --disable-zlib --prefix=../$SRC_DEST
+  make -j9
+  make scp
+  make install
+}
+
+if [ -d $SRC_DEST ]
+  then
+    echo "Le dossier contenant dropbear existe déjà, voici son contenu."
+    ls $SRC_DEST
+    echo -n "Voulez-vous l'installer quand même ? [Y/n] (Non défaut)"
+    read REP
+    if [ "$REP" = "Y" -o "$REP" = "y" ]
+      then
+        install_dropbear
+    fi
+  else
+    mkdir $SRC_DEST
+    install_dropbear
+fi
+
+cp -r $SRC_DEST/* $ROOT_PATH
+for f in $(ls $SRC_DEST/bin); do
+  chmod +s $ROOT_PATH/bin/$f
+done

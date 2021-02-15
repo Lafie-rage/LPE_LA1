@@ -1,0 +1,32 @@
+#! /bin/sh
+
+# Monte systeme fichier virtuel qui gere les processus
+mount none /proc -t proc
+# Monte systeme fichier system
+mount none /sys  -t sysfs
+# Monte /dev
+mount none /dev -t devtmpfs
+
+busybox --install -s
+
+mkdir /dev/pts
+mount none /dev/pts -t devpts
+# Monte en lecture ecriture le système de fichier racine
+mount / -o remount,rw
+
+# Load la key map en fr
+loadkmap < /etc/french.kmap
+
+# Network config
+# Initialiser le nom de machine
+hostname -F /etc/hostname
+/etc/init.d/rc.network &
+
+# Lancer les services
+/etc/init.d/rc.services &
+
+# Activer le signe de vie
+modprobe ledtrig-heartbeat
+echo heartbeat > /sys/class/leds/led0/trigger
+
+login

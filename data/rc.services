@@ -1,0 +1,16 @@
+#! /bin/sh
+###########################################################
+# rc.services- Services reseau
+#
+# 2012-09-03 - CPB
+###########################################################
+
+telnetd
+
+httpd -h /home/httpd
+
+if [ ! -f /etc/dropbearkey.rsa ]; then
+  dropbearkey -t rsa -f /etc/dropbearkey.rsa
+fi
+
+dropbear -r /etc/dropbearkey.rsa

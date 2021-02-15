@@ -1,0 +1,12 @@
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+
+# Prompt : user@hostname [chemin]
+PS1="\u@\h [\W]"
+# Symbole = $ pour utilisateur normale, # pour root
+if [ $(id -u) -eq 0 ]
+then
+	PS1=${PS1}"# "
+else
+	PS1=${PS1}"$ "
+fi

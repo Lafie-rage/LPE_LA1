@@ -1,0 +1,16 @@
+#! /bin/sh
+# rc.network - Network interfaces
+
+# ----------------------------------------------------------
+# lo - Loopback interface
+ifconfig lo 127.0.0.1
+
+# ----------------------------------------------------------
+# eth0 - Ethernet interface
+
+# Wait for eth0 to be ready
+while ! /sbin/ifconfig -a | grep eth0>/dev/null
+do
+	sleep 1
+done
+ifplugd -i eth0
