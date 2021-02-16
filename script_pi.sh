@@ -121,8 +121,9 @@ chmod +x udhcpc/udhcpc.action
 cat $DATA_PATH/hostname > hostname
 cat $DATA_PATH/profile > profile
 cd $ROOT_PATH
-mkdir -p home/httpd
+mkdir -p home/httpd home/root
 cat $DATA_PATH/index.html > home/httpd/index.html
+cp $DATA_PATH/test_png.png home/root/test_png.png
 if [ ! -d run ]
   then
     mkdir -p run
@@ -170,9 +171,8 @@ SRC_DEST=$WHERE_AM_I_RAN/build/compiled_dropbear_rpi
 
 install_dropbear() {
   ./configure --host=arm-linux --disable-zlib --prefix=../$SRC_DEST
-  make -j9
-  make scp
-  make install
+  make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp" -j9
+  make PROGRAMS="dropbear dbclient dropbearkey dropbearconvert scp" install 
 }
 
 if [ -d $SRC_DEST ]
