@@ -51,7 +51,7 @@ fi
 cp -r $TARGET/* $ROOT_PATH
 
 
-mkdir -p $ROOT_PATH/home/root/ncurses_programs
+mkdir -p $ROOT_PATH/home/root/ncurses_samples
 cd $WHERE_AM_I_RAN/src
 make sample_ncurses_pi
 
